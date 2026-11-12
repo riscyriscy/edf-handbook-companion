@@ -1,0 +1,9 @@
+the_ROM_image:
+{
+	[pskfile] primary.pem
+	[sskfile] secondary.pem
+	[auth_params] ppk_select=0; spk_id=0x00000001
+	[bootloader, authentication=rsa, destination_cpu=a53-0] fsbl.elf
+	[authentication=rsa, destination_cpu=a53-0, exception_level=el-3, trustzone] atf.elf
+	[authentication=rsa, destination_cpu=a53-0, exception_level=el-2] u-boot.elf
+}

@@ -1,0 +1,11 @@
+/dts-v1/;
+/* A stand-in for the rest of the device tree, so that dtc can compile the memory fragment on any host. */
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+/include/ "r5-memory-overlap.dtsi"

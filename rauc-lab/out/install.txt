@@ -1,0 +1,56 @@
+$ rauc status
+=== System Info ===
+Compatible:  handbook-vpk120
+Variant:     
+Booted from: rootfs.0 (A)
+=== Bootloader ===
+Activated: rootfs.0 (A)
+=== Slot States ===
+o [rootfs.1] (/tmp/rootfs1, raw, inactive)
+	bootname: B
+	boot status: bad
+x [rootfs.0] (/tmp/rootfs0, raw, booted)
+	bootname: A
+	boot status: good
+
+$ rauc install plain.raucb
+installing
+  0% Installing
+  0% Determining slot states
+ 10% Determining slot states done.
+ 10% Checking bundle
+ 10% Verifying signature
+ 20% Verifying signature done.
+ 20% Checking bundle done.
+ 20% Checking manifest contents
+ 30% Checking manifest contents done.
+ 30% Determining target install group
+ 40% Determining target install group done.
+ 40% Updating slots
+ 40% Checking slot rootfs.1
+ 46% Checking slot rootfs.1 done.
+ 46% Copying image to rootfs.1
+ 99% Updating slots done.
+100% Installing done.
+idle
+Installing `plain.raucb` succeeded
+
+$ cat /tmp/bl-state
+PRIMARY=B
+STATE_A=good
+STATE_B=bad
+
+$ rauc status
+=== System Info ===
+Compatible:  handbook-vpk120
+Variant:     
+Booted from: rootfs.0 (A)
+=== Bootloader ===
+Activated: rootfs.1 (B)
+=== Slot States ===
+x [rootfs.1] (/tmp/rootfs1, raw, inactive)
+	bootname: B
+	boot status: bad
+o [rootfs.0] (/tmp/rootfs0, raw, booted)
+	bootname: A
+	boot status: good

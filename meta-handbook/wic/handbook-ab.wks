@@ -1,0 +1,8 @@
+# ESP with the boot manager and the kernel
+part /efi  --source bootimg-efi-amd --fstype=vfat --label esp   --part-name esp   --active --size 512M --align 4096
+# Slot A and slot B, equal size, fixed partition names that system.conf refers to
+part /     --source rootfs --fstype=ext4 --label rootA --part-name rootA --size 1536M --align 4096
+part       --source rootfs --fstype=ext4 --label rootB --part-name rootB --size 1536M --align 4096
+# Persistent data shared by both slots
+part /data --fstype=ext4 --label data --part-name data --size 1024M --align 4096
+bootloader --ptable gpt

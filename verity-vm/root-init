@@ -1,0 +1,11 @@
+#!/bin/sh
+# First process of the verity root (chapter 12): it reads the files of the root and reports what dm-verity did.
+export PATH=/bin:/sbin
+mount -t proc proc /proc; mount -t devtmpfs dev /dev; mount -t tmpfs tmp /tmp
+echo "root: running from $(grep ' / ' /proc/mounts | head -1)"
+for f in /data/ok.bin /data/marker.bin; do
+  if dd if=$f of=/dev/null bs=4096 2>/tmp/err; then echo "root: read $f ok"; else echo "root: read $f failed: $(tail -1 /tmp/err)"; fi
+done
+dmesg | grep "device-mapper: verity" | head -3
+echo "root: done"
+poweroff -f

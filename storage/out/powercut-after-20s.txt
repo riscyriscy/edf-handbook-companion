@@ -1,0 +1,3 @@
+cut 20s      ext4 defaults (data=ordered)   trials  3  journal replay needed  3  fsck errors after replay  0  synced files acknowledged  5244 lost or damaged 0  unsynced files written  5244 found  5244 incomplete 74
+cut 20s      ext4 commit=1                  trials  3  journal replay needed  3  fsck errors after replay  0  synced files acknowledged  5244 lost or damaged 0  unsynced files written  5244 found  5244 incomplete 75
+cut 20s      ext4 data=writeback            trials  3  journal replay needed  3  fsck errors after replay  0  synced files acknowledged  5244 lost or damaged 0  unsynced files written  5244 found  5244 incomplete 76

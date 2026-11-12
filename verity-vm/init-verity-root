@@ -1,0 +1,15 @@
+#!/bin/sh
+# Initramfs of the verity root lab (chapter 12). Opens /dev/vda as a dm-verity device with the hash tree on /dev/vdb and the
+# root hash from the kernel command line (handbook.roothash=...), mounts it read only and switches to it.
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+mount -t proc proc /proc; mount -t sysfs sys /sys; mount -t devtmpfs dev /dev
+echo "initramfs: kernel $(uname -r)"
+HASH=; OPT=
+for a in $(cat /proc/cmdline); do case $a in handbook.roothash=*) HASH=${a#*=};; handbook.verityopt=*) OPT=${a#*=};; esac; done
+insmod /lib/modules/libcrc32c.ko; insmod /lib/modules/dm-bufio.ko; insmod /lib/modules/dm-verity.ko
+echo "initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> $OPT"
+if ! veritysetup open /dev/vda vroot /dev/vdb "$HASH" $OPT; then echo "initramfs: veritysetup open failed, powering off"; poweroff -f; fi
+veritysetup status vroot | grep -E "type|status|hash|data"
+if ! mount -t squashfs -o ro /dev/mapper/vroot /newroot; then echo "initramfs: mount failed, powering off"; dmesg | grep -i "verity\|squashfs" | tail -5; poweroff -f; fi
+echo "initramfs: switching to the verity root"
+exec switch_root /newroot /sbin/init

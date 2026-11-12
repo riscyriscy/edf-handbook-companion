@@ -1,0 +1,25 @@
+$ dtc -I dts -O dtb -o top.dtb stub-top.dts && check-rpu-memory.py top.dtb
+PASS rproc@3ed00000         0x3ed00000 0x0040000 
+PASS rpu0vdev0vring0@3ed40000 0x3ed40000 0x0004000 
+PASS rpu0vdev0vring1@3ed44000 0x3ed44000 0x0004000 
+PASS rpu0vdev0buffer@3ed48000 0x3ed48000 0x0100000 
+regions: 4, failures: 0
+exit status 0
+
+$ dtc -I dts -O dtb -o top.dtb stub-top-overlap.dts && check-rpu-memory.py top.dtb
+PASS rproc@3ed00000         0x3ed00000 0x0040000 
+PASS rpu0vdev0vring0@3ed40000 0x3ed40000 0x0004000 
+PASS rpu0vdev0vring1@3ed43000 0x3ed43000 0x0004000 
+PASS rpu0vdev0buffer@3ed48000 0x3ed48000 0x0100000 
+FAIL rpu0vdev0vring0@3ed40000 overlaps rpu0vdev0vring1@3ed43000 by 0x1000
+regions: 4, failures: 1
+exit status 1
+
+$ dtc -I dts -O dtb -o top.dtb stub-top-outside.dts && check-rpu-memory.py top.dtb
+PASS rproc@3ed00000         0x3ed00000 0x0040000 
+PASS rpu0vdev0vring0@3ed40000 0x3ed40000 0x0004000 
+PASS rpu0vdev0vring1@3ed44000 0x3ed44000 0x0004000 
+FAIL rpu0vdev0buffer@7ff80000 0x7ff80000 0x0100000 outside DDR 0x0-0x80000000
+regions: 4, failures: 1
+exit status 1
+

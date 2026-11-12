@@ -1,0 +1,11 @@
+#!/bin/sh
+# Run the migration scripts once per release. Idempotent: a repeat run finds the versions equal and exits.
+new=$(cat /etc/handbook-release)
+old=$(cat /data/release 2>/dev/null || echo none)
+[ "$new" = "$old" ] && exit 0
+for s in /usr/lib/handbook/migrate.d/*.sh; do
+    [ -e "$s" ] || continue
+    echo "handbook-migrate: $s ($old to $new)"
+    sh "$s" "$old" "$new" || { echo "handbook-migrate: $s failed" >&2; exit 1; }
+done
+echo "$new" > /data/release.tmp && sync && mv /data/release.tmp /data/release

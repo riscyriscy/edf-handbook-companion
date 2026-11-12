@@ -1,0 +1,20 @@
+image format                 size MiB  data blocks   same place found anywhere   to fetch
+ext4, 4 KiB blocks               96.0         6212        23.5%          98.4%     0.4 MiB
+squashfs, 4 KiB blocks           17.8         4556        31.7%          31.7%    12.2 MiB
+squashfs, 128 KiB blocks         16.1         4109        34.3%          34.3%    10.5 MiB
+
+$ rauc bundle --cert dev.cert.pem --key dev.key.pem bundle-ad adaptive.raucb   # manifest: format=verity, adaptive=block-hash-index
+Creating 'verity' format bundle
+$ rauc info adaptive.raucb | grep -i "format\|adaptive\|size"
+Bundle Format: 	verity
+  Verity Size: 	139264
+	Size:      100.7 MB (100663296 bytes)
+	Adaptive:  block-hash-index
+
+$ rauc bundle ... bundle-bad x.raucb   # adaptive=block-hash-index, image of 1000001 bytes (not a multiple of 4096)
+(rauc:8542): GLib-CRITICAL **: 18:59:24.432: g_close(fd:3) failed with EBADF. The tracking of file descriptors got messed up
+exit status 133
+$ rauc bundle ... bundle-bad x.raucb   # same manifest, image of 1003520 bytes (245 x 4096)
+exit status 0
+$ rauc bundle ... bundle-bad x2.raucb   # image of 1000001 bytes, adaptive line removed
+exit status 0

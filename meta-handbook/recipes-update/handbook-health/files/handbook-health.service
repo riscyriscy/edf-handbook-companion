@@ -1,0 +1,14 @@
+[Unit]
+Description=Handbook health check before the boot is marked good
+After=edf-hello.service data.mount
+Before=boot-complete.target
+RequiresMountsFor=/data
+FailureAction=reboot
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/handbook-health-check
+TimeoutStartSec=60
+
+[Install]
+RequiredBy=boot-complete.target

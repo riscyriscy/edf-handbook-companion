@@ -1,0 +1,36 @@
+# Part 1: gdbserver, build host architecture
+$ gcc -g -O0 -static -Wl,--build-id -fdebug-prefix-map=$PWD=. -o crash.full crash.c
+$ objcopy --only-keep-debug crash.full symbols/.build-id/xx/yyyy.debug   # to the host
+$ objcopy --strip-all crash.full dev/crash                                 # to the device
+crash.full 787152 bytes
+dev/crash 706576 bytes
+symbols/.build-id/xx/yyyy.debug
+
+$ gdbserver --once localhost:2345 dev/crash arg1 &        # on the device
+$ gdb -batch -ex "target remote localhost:2345" -ex continue -ex bt dev/crash   # no symbols on the host
+0x0000000000401790 in ?? ()
+Program received signal SIGSEGV, Segmentation fault.
+0x00000000004018db in ?? ()
+#0  0x00000000004018db in ?? ()
+#1  0x0000000000401977 in ?? ()
+#2  0x0000000000401eb8 in ?? ()
+#3  0x0000000000404080 in ?? ()
+#4  0x00000000004017b5 in ?? ()
+
+$ gdbserver --once localhost:2346 dev/crash arg1 &
+$ gdb -batch -iex "set debug-file-directory symbols" -ex "target remote localhost:2346" -ex continue -ex bt dev/crash
+0x0000000000401790 in _start ()
+Program received signal SIGSEGV, Segmentation fault.
+0x00000000004018db in parse (f=0x0, s=0x7fffffff7d3d "arg1") at ./crash.c:8
+#0  0x00000000004018db in parse (f=0x0, s=0x7fffffff7d3d "arg1") at ./crash.c:8
+#1  0x0000000000401977 in main (argc=2, argv=0x7fffffff7518) at ./crash.c:17
+
+# Part 2: aarch64 binary through the QEMU user mode gdb stub
+$ qemu-aarch64 -g 2347 dev/crash arg1 &
+$ gdb-multiarch -batch -iex "set debug-file-directory symbols" -ex "target remote localhost:2347" -ex continue -ex bt -ex "info registers pc" dev/crash
+0x0000000000400640 in _start ()
+Program received signal SIGSEGV, Segmentation fault.
+0x00000000004007d0 in parse (f=0x0, s=0x4000007f9d3a "arg1") at ./crash.c:8
+#0  0x00000000004007d0 in parse (f=0x0, s=0x4000007f9d3a "arg1") at ./crash.c:8
+#1  0x0000000000400878 in main (argc=2, argv=0x4000007f9548) at ./crash.c:17
+pc             0x4007d0            0x4007d0 <parse+32>

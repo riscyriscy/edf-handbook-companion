@@ -1,0 +1,15 @@
+$ rauc --conf sys-custom.conf install wrong-compat.raucb
+100% Installing failed.
+LastError: Compatible mismatch: Expected 'handbook-vpk120' but bundle manifest has 'handbook-other'
+Installing `wrong-compat.raucb` failed
+
+$ rauc --conf sys-custom.conf install extra-slot.raucb
+100% Installing failed.
+LastError: Installation error: No target slot for class bootloader of image rootfs.img found
+Installing `extra-slot.raucb` failed
+
+$ rauc --conf sys-nokeyring.conf info plain.raucb
+No keyring file or directory provided
+
+$ rauc --conf sys-custom.conf install missing.raucb
+No such file: missing.raucb

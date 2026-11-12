@@ -1,0 +1,14 @@
+# plain bundle plain.raucb, one byte changed at offset 300000 of the payload
+$ rauc --conf sys-custom.conf info tamper-plain-payload.raucb
+signature verification failed: error:1700009E:CMS routines::verification failure
+
+$ rauc --conf sys-custom.conf extract tamper-plain-payload.raucb out-dir
+signature verification failed: error:1700009E:CMS routines::verification failure
+
+# verity bundle update.raucb, one byte changed at offset 300000 of the payload
+$ rauc --conf sys-custom.conf info tamper-update-payload.raucb
+Compatible: 	'handbook-vpk120'
+
+$ rauc --conf sys-custom.conf extract tamper-update-payload.raucb out-dir
+Failed to extract bundle: bundle payload is corrupted
+

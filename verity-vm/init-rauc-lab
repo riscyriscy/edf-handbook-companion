@@ -1,0 +1,12 @@
+#!/bin/sh
+# Init of the RAUC verity lab guest (chapter 12). Runs the tests in /lab/tests.sh, prints a transcript on the serial console, powers off.
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin
+mount -t proc proc /proc; mount -t sysfs sys /sys; mount -t devtmpfs dev /dev; mount -t tmpfs tmp /tmp; mount -t tmpfs run /run
+mkdir -p /run/dbus /dev/mapper
+echo "guest: kernel $(uname -r)"
+insmod /lib/modules/libcrc32c.ko; insmod /lib/modules/dm-bufio.ko; insmod /lib/modules/dm-verity.ko
+[ -e /lib/modules/nbd.ko ] && insmod /lib/modules/nbd.ko nbds_max=4
+dbus-daemon --config-file=/lab/bus.conf --fork
+cd /lab && sh /lab/tests.sh
+echo "guest: done"
+poweroff -f

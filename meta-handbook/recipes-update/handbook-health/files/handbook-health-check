@@ -1,0 +1,7 @@
+#!/bin/sh
+# Exit 0 only when the system is fit to be marked good. Keep the checks short and independent of the network.
+fail() { echo "handbook-health: $1" >&2; exit 1; }
+systemctl is-active --quiet edf-hello.service       || fail "application service is not active"
+touch /data/.health-probe 2>/dev/null && rm -f /data/.health-probe || fail "data partition is not writable"
+[ -s /etc/handbook-release ]                         || fail "release file missing"
+echo "handbook-health: ok"

@@ -1,0 +1,30 @@
+#!/usr/sbin/nft -f
+# Host firewall for the product image. The device accepts what the product serves and drops everything else.
+# Replace only this table, so that rules added by other tools (a container runtime, for example) stay in place.
+table inet handbook
+delete table inet handbook
+
+table inet handbook {
+	chain input {
+		type filter hook input priority filter; policy drop;
+		ct state invalid drop
+		ct state established,related accept
+		iifname "lo" accept
+		icmp type echo-request limit rate 10/second accept
+		# IPv6 needs neighbour discovery to work at all, if the product ever enables it
+		icmpv6 type { echo-request, nd-neighbor-solicit, nd-neighbor-advert, nd-router-advert } accept
+		# SSH only from the management VLAN, at most 6 new connections a minute
+		iifname "vlan20" tcp dport 22 ct state new limit rate 6/minute accept
+		# The product web interface on both networks
+		iifname { "eth0", "vlan20" } tcp dport 443 accept
+		# Modbus TCP only from the control network
+		iifname "eth0" ip saddr 192.0.2.0/24 tcp dport 502 accept
+		counter comment "dropped by policy"
+	}
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+	}
+	chain output {
+		type filter hook output priority filter; policy accept;
+	}
+}

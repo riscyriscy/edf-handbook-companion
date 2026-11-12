@@ -1,0 +1,32 @@
+$ console_check.py "python3 fake_target.py" > boot.txt   # a scripted console, not a board
+$ check-budgets.py boot boot.txt Kernel=2 systemd=3 login=3
+PASS Kernel at 1.51 s (budget 2 s)
+PASS systemd at 1.91 s (budget 3 s)
+PASS login at 2.01 s (budget 3 s)
+exit status 0
+$ check-budgets.py boot boot.txt Kernel=1 login=1.5
+FAIL Kernel at 1.51 s (budget 1 s)
+FAIL login at 2.01 s (budget 1.5 s)
+exit status 2
+
+$ check-budgets.py analyze fixtures/analyze-ok.txt --max-kernel 5 --max-userspace 12
+PASS kernel 3.90 s (budget 5 s)
+PASS userspace 8.40 s (budget 12 s)
+exit status 0
+$ check-budgets.py analyze fixtures/analyze-slow.txt --max-kernel 5 --max-userspace 12
+PASS kernel 4.20 s (budget 5 s)
+FAIL userspace 21.60 s (budget 12 s)
+exit status 1
+
+$ check-budgets.py image root700.ext4 --wks handbook-ab.wks --part rootA --max-used 75
+PASS image file 1536 MiB, partition rootA 1536 MiB
+PASS used 761 MiB is 50 percent of the partition (budget 75 percent)
+exit status 0
+$ check-budgets.py image root1250.ext4 --wks handbook-ab.wks --part rootA --max-used 75
+PASS image file 1536 MiB, partition rootA 1536 MiB
+FAIL used 1311 MiB is 85 percent of the partition (budget 75 percent)
+exit status 1
+$ check-budgets.py image big.ext4 --wks handbook-ab.wks --part rootA --max-used 75   # image file larger than the slot
+FAIL image file 1600 MiB, partition rootA 1536 MiB
+PASS used 62 MiB is 4 percent of the partition (budget 75 percent)
+exit status 1

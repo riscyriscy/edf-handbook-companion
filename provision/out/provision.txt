@@ -1,0 +1,40 @@
+$ provision-unit.sh units/HB000001 HB000001 ca ledger.csv
+provisioned HB000001
+$ provision-unit.sh units/HB000002 HB000002 ca ledger.csv
+provisioned HB000002
+$ provision-unit.sh units/HB000003 HB000003 ca ledger.csv
+provisioned HB000003
+
+$ cat ledger.csv   # serial, SHA-256 of the certificate, time (certificate digits shortened)
+HB000001,354BB0E8672D...
+HB000002,0F0B659EABF2...
+HB000003,D7620A3BEB31...
+
+$ verify-unit.sh units/HB000002 ledger.csv rootfs <digest>
+PASS serial file has the format
+PASS certificate chains to the factory CA
+PASS certificate subject is the serial
+PASS private key matches the certificate
+PASS private key file mode is 600
+PASS release keyring digest is 64 hex digits
+PASS RAUC keyring in the image is the release keyring
+PASS system.conf points at that keyring
+PASS ledger has this serial once, with this certificate
+exit status 0
+
+# Mistakes
+$ provision-unit.sh units/HB000002b HB000002 ca ledger.csv       # same serial again
+serial HB000002 is already in the ledger
+exit status 3
+$ provision-unit.sh units/x hb-7 ca ledger.csv                   # malformed serial
+bad serial format: hb-7
+exit status 2
+
+$ verify-unit.sh units/HB000003 ledger.csv rootfs-other <digest>   # flashed with an image that has another keyring
+FAIL RAUC keyring in the image is the release keyring
+exit status 1
+
+$ verify-unit.sh units/HB000001 ledger.csv rootfs <digest>   # certificate signed by the wrong factory CA
+FAIL certificate chains to the factory CA
+FAIL ledger has this serial once, with this certificate
+exit status 2

@@ -1,0 +1,19 @@
+$ pip show labgrid | head -2
+Name: labgrid
+Version: 26.0.1
+
+$ pytest --lg-env env.yaml test_boot.py -v
+test_boot.py::test_stage_reached[PLM] PASSED                            
+test_boot.py::test_stage_reached[TF-A] PASSED                           
+test_boot.py::test_stage_reached[U-Boot] PASSED                         
+test_boot.py::test_stage_reached[Kernel] PASSED                         
+test_boot.py::test_stage_reached[systemd] PASSED                        
+test_boot.py::test_stage_reached[login] PASSED                          
+============================== 6 passed ===============================
+
+$ pytest --lg-env env-panic.yaml test_boot.py -v -x -rf   # the console panics before U-Boot starts
+test_boot.py::test_stage_reached[PLM] PASSED                            
+test_boot.py::test_stage_reached[TF-A] PASSED                           
+test_boot.py::test_stage_reached[U-Boot] FAILED                         
+FAILED test_boot.py::test_stage_reached[U-Boot] - Failed: U-Boot not seen wit...
+========================= 1 failed, 2 passed ==========================

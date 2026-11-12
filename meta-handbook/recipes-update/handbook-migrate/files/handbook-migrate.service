@@ -1,0 +1,12 @@
+[Unit]
+Description=Handbook data migration on first boot of a release
+RequiresMountsFor=/data
+Before=edf-hello.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/handbook-migrate
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

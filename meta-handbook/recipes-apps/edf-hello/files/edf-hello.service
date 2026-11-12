@@ -1,0 +1,9 @@
+[Unit]
+Description=EDF hello
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/edf-hello
+
+[Install]
+WantedBy=multi-user.target

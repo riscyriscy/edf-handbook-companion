@@ -1,0 +1,43 @@
+# root hash from veritysetup format: 64dde715547e15dd5f795da1c736382a154e0b9e868738787d8c98ef601c2187
+# image: 2260992 bytes, hash tree: 28672 bytes; marker file at image offset 2124704
+
+# 1. Clean image, correct root hash
+initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> 
+initramfs: switching to the verity root
+root: running from /dev/mapper/vroot / squashfs ro,relatime,errors=continue,threads=single 0 0
+root: read /data/ok.bin ok
+root: read /data/marker.bin ok
+root: done
+
+# 2. One byte changed in data/marker.bin inside the image
+initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> 
+initramfs: switching to the verity root
+root: running from /dev/mapper/vroot / squashfs ro,relatime,errors=continue,threads=single 0 0
+root: read /data/ok.bin ok
+device-mapper: verity: 253:0: data block 523 is corrupted
+root: read /data/marker.bin failed: dd: /data/marker.bin: Input/output error
+root: done
+
+# 3. The same damage, device opened with --restart-on-corruption
+initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> --restart-on-corruption
+initramfs: switching to the verity root
+root: running from /dev/mapper/vroot / squashfs ro,relatime,errors=continue,threads=single 0 0
+root: read /data/ok.bin ok
+device-mapper: verity: 253:0: data block 523 is corrupted
+reboot: Restarting system with command 'dm-verity device corrupted'
+
+# 4. One byte changed in the last block of bin/busybox, the program that runs as process 1
+initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> 
+initramfs: switching to the verity root
+device-mapper: verity: 253:0: data block 518 is corrupted
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+
+# 5. Root hash on the command line is wrong by one digit
+initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> 
+device-mapper: verity: 253:0: metadata block 1 is corrupted
+initramfs: mount failed, powering off
+
+# 6. One byte changed in the hash tree
+initramfs: veritysetup open /dev/vda vroot /dev/vdb <root hash> 
+device-mapper: verity: 253:0: metadata block 1 is corrupted
+initramfs: mount failed, powering off

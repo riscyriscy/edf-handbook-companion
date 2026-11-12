@@ -1,0 +1,28 @@
+$ e2fsck -p -f t.img   # undamaged
+data: 16/8192 files (6.3% non-contiguous), 1794/8192 blocks
+exit status 0
+
+$ e2fsck -p -f t.img   # link count of one file wrong
+data: Inode 13 ref count is 7, should be 1.  FIXED.
+data: 16/8192 files (6.3% non-contiguous), 1794/8192 blocks
+exit status 1
+
+$ e2fsck -p -f t.img   # bitmap says 50 blocks are free that hold data
+data: 16/8192 files (6.3% non-contiguous), 1794/8192 blocks
+exit status 1
+
+$ e2fsck -p -f t.img   # a file points into the metadata area
+data: Inode 14 has corrupt extent header.  
+
+data: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
+	(i.e., without -a or -p options)
+exit status 4
+
+$ e2fsck -p -f t.img   # primary superblock zeroed
+e2fsck: Bad magic number in super-block while trying to open t.img
+
+The superblock could not be read or does not describe a valid ext2/ext3/ext4
+filesystem.  If the device is valid and it really contains an ext2/ext3/ext4
+filesystem (and not swap or ufs or something else), then the superblock
+exit status 8
+

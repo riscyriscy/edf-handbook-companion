@@ -1,0 +1,81 @@
+guest: kernel 6.8.0-147-generic
+# device-mapper in the guest: /dev/mapper/control, module dm_verity loaded
+$ rauc install v2n.raucb    (verity bundle, full image)
+Installing `/lab/v2n.raucb` succeeded
+bytes written to slot B: 5242880
+slot B equals img2
+boot state: PRIMARY=B STATE_A=good STATE_B=bad 
+# A. Damaged bundles
+$ rauc install tamper-sig.raucb    (one byte changed in the signature)
+LastError: Invalid bundle format: Signature data is no valid CMS
+Installing `/lab/tamper-sig.raucb` failed
+bytes written to slot B: 0
+boot state: PRIMARY=B STATE_A=good STATE_B=bad 
+slot B equals img2
+$ rauc install tamper-payload.raucb    (release 4 image, which shares no block with slot B; one byte changed at offset 300000 of the bundle)
+LastError: Installation error: Failed updating slot rootfs.1: Failed to copy data: Error reading from file: Input/output error
+Installing `/lab/tamper-payload.raucb` failed
+bytes written to slot B: 262144
+boot state: PRIMARY=B STATE_A=good STATE_B=bad 
+# slot B against release 4 (the new image): /dev/vdb img4 differ: char 262145, line 1015
+# slot B against release 2 (the old image): /dev/vdb img2 differ: char 1, line 1
+# B. Adaptive bundles (block-hash-index); the slot is the source of the blocks that did not change
+$ rauc install v1.raucb    (adaptive, slot B holds the mix left by the failed install)
+Installing `/lab/v1.raucb` succeeded
+bytes written to slot B: 262144
+slot B equals img1
+$ rauc install v2.raucb    (adaptive, 8 blocks of 4 KiB differ from the slot)
+Installing `/lab/v2.raucb` succeeded
+bytes written to slot B: 32768
+slot B equals img2
+# C. One block of the slot damaged where the index points to it
+slot B differs from img2: /dev/vdb img2 differ: char 409608, line 1622
+$ rauc install v3.raucb    (adaptive, 4 blocks differ, block 100 of the slot is damaged)
+Installing `/lab/v3.raucb` succeeded
+bytes written to slot B: 20480
+slot B equals img3
+# D. Streaming from a web server (bytes fetched are counted by the server)
+$ rauc install http://10.0.2.2:8099/v2n.raucb    (verity bundle, no adaptive mode, over HTTP)
+Installing `http://10.0.2.2:8099/v2n.raucb` succeeded
+bytes written to slot B: 5242880
+slot B equals img2
+$ rauc install http://10.0.2.2:8099/v3.raucb    (adaptive bundle, over HTTP; slot B holds release 2, 4 blocks differ)
+Installing `http://10.0.2.2:8099/v3.raucb` succeeded
+bytes written to slot B: 16384
+slot B equals img3
+# E. Streaming over HTTPS with the unit certificate (mutual TLS); each case restarts the RAUC service with its own configuration
+# The streaming helper runs as the sandbox user nobody (uid 65534), so the files named by tls-cert and tls-key must be readable by that user
+as provisioned: -rw------- owner 0 /lab/tls/device.cert.pem
+as provisioned: -rw------- owner 0 /lab/tls/device.key.pem
+$ rauc --conf sys-nocert.conf install https://10.0.2.2:8443/v2.raucb    (the server is trusted, no client certificate)
+LastError: Failed to stream bundle https://10.0.2.2:8443/v2.raucb: failed to configure streaming: server not responding
+Installing `https://10.0.2.2:8443/v2.raucb` failed
+request failed: Failure when receiving data from the peer (retrying)
+bytes written to slot B: 0
+$ rauc --conf sys-wrong.conf install https://10.0.2.2:8443/v2.raucb    (client certificate signed by another factory CA)
+LastError: Failed to stream bundle https://10.0.2.2:8443/v2.raucb: failed to configure streaming: server not responding
+Installing `https://10.0.2.2:8443/v2.raucb` failed
+request failed: Failed sending data to the peer (retrying)
+bytes written to slot B: 0
+$ rauc --conf sys-tls.conf install https://10.0.2.2:8443/v2.raucb    (unit certificate HB000001, files as provisioned)
+LastError: Failed to stream bundle https://10.0.2.2:8443/v2.raucb: failed to configure streaming: server not responding
+Installing `https://10.0.2.2:8443/v2.raucb` failed
+request failed: SSL connect error (retrying)
+bytes written to slot B: 0
+readable by nobody: -rw-r--r-- owner 0 /lab/tls/device.cert.pem
+readable by nobody: -rw------- owner 65534 /lab/tls/device.key.pem
+$ rauc --conf sys-tls.conf install https://10.0.2.2:8443/v2.raucb    (unit certificate HB000001, files readable by the sandbox user)
+Installing `https://10.0.2.2:8443/v2.raucb` succeeded
+bytes written to slot B: 16384
+slot B equals img2
+guest: done
+
+# Bytes the web server sent, from its request log (sizes of the bundles: v2n.raucb 5297326, v3.raucb 5338314)
+v2n.raucb: 51 requests, 5334194 bytes
+v3.raucb: 13 requests, 308430 bytes
+
+# What the TLS server logged (requests by client certificate common name, and refused handshakes)
+client HB000001: 13 requests
+refused: CERTIFICATE_VERIFY_FAILED    (6)
+refused: PEER_DID_NOT_RETURN_A_CERTIFICATE    (6)
+refused: UNEXPECTED_EOF_WHILE_READING    (6)

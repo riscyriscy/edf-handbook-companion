@@ -1,0 +1,45 @@
+$ bootgen -arch zynqmp -image keys.bif -generate_keys pem
+[WARNING]: A bootimage cannot be generated on the go, with '-generate_keys'.
+           However, the requested keys will be generated.
+[INFO]   : Bootimage generated successfully
+primary.pem
+secondary.pem
+
+$ bootgen -arch zynqmp -image auth.bif -w -o boot.bin -efuseppkbits efuseppksha.txt
+[INFO]   : Bootimage generated successfully
+boot.bin: 22464 bytes. PPK hash file: 96 hex digits
+
+$ bootgen -arch zynqmp -image auth.bif -verify boot.bin
+9 signature checks passed (header, SPK and partitions)
+Authentication is verified on bootimage boot.bin
+
+# The same flags through the BIF writer of meta-xilinx (bootgen-bif.bbclass)
+the_ROM_image:
+{
+	 [pskfile] primary.pem
+	 [sskfile] secondary.pem
+	 [auth_params] ppk_select=0; spk_id=0x00000001
+	 [bootloader, destination_cpu=a53-0, authentication=rsa] fsbl.elf
+	 [destination_cpu=a53-0, exception_level=el-3, trustzone, authentication=rsa] atf.elf
+	 [destination_cpu=a53-0, exception_level=el-2, authentication=rsa] u-boot.elf
+}
+$ bootgen -arch zynqmp -image gen.bif -w -o gen.bin ; bootgen -arch zynqmp -image gen.bif -verify gen.bin
+[INFO]   : Bootimage generated successfully
+Authentication is verified on bootimage gen.bin
+sizes: boot.bin 22464 bytes, gen.bin 22464 bytes
+
+# Flip one byte inside the u-boot partition, then verify again
+$ bootgen -arch zynqmp -image auth.bif -verify boot-tampered.bin
+Verifying Partition 'u-boot.elf.0' Authentication Certificate
+    SPK Signature Verified
+    Partition Signature Verification Failed
+[ERROR]  : Authentication verification failed on bootimage boot-tampered.bin
+
+# A new secondary key under the same primary key: the PPK hash does not change
+$ bootgen -arch zynqmp -image auth.bif -verify boot.bin    (secondary key 2, SPK ID 2)
+Authentication is verified on bootimage boot.bin
+hash, key set 1             : 5C9F42635F4964AA13F6DEC6952C1B09382C6B0F4672B42250F8DC9DFF1BCE97B8265F8A4586598319F1B78B476CF869
+hash, same primary, new SPK : 5C9F42635F4964AA13F6DEC6952C1B09382C6B0F4672B42250F8DC9DFF1BCE97B8265F8A4586598319F1B78B476CF869
+
+# A new primary key: the PPK hash changes
+hash, key set 2             : 4E4C06B4B19E3932DC185C3E4CEE83C0A68B2ABDD565746EE51647FE2D39F019E008F4F40B5A96E8CBC02F92D0CE61CD

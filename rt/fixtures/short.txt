@@ -1,0 +1,4 @@
+# synthetic fixture in the format of 'cyclictest -q', not a measurement
+# /dev/cpu_dma_latency set to 0us
+T: 0 ( 1201) P:80 I:1000 C:   2000 Min:      6 Act:    9 Avg:   11 Max:      74
+T: 1 ( 1202) P:80 I:1000 C:   2000 Min:      6 Act:    8 Avg:   10 Max:      88

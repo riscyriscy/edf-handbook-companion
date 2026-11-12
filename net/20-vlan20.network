@@ -1,0 +1,7 @@
+[Match]
+Name=vlan20
+
+[Network]
+Address=198.51.100.10/24
+LinkLocalAddressing=no
+IPv6AcceptRA=no

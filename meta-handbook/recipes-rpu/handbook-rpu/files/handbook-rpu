@@ -1,0 +1,57 @@
+#!/bin/sh
+# Start, stop and check one real time core through the remoteproc sysfs interface.
+# Usage: handbook-rpu start|stop|status
+# Settings (environment): RPU_MATCH   text that the core's 'name' file contains   (default r5f_0)
+#                         RPU_FW      firmware file name under /lib/firmware     (default handbook-rpu0.elf)
+#                         RPU_TIMEOUT seconds to wait for a state change         (default 5)
+#                         RPROC_ROOT  sysfs directory                            (default /sys/class/remoteproc)
+#                         FW_DIR      firmware directory                         (default /lib/firmware)
+MATCH=${RPU_MATCH:-r5f_0}
+FW=${RPU_FW:-handbook-rpu0.elf}
+TIMEOUT=${RPU_TIMEOUT:-5}
+ROOT=${RPROC_ROOT:-/sys/class/remoteproc}
+FW_DIR=${FW_DIR:-/lib/firmware}
+
+find_core() {
+    for d in "$ROOT"/remoteproc*; do
+        [ -r "$d/name" ] || continue
+        case "$(cat "$d/name")" in *"$MATCH"*) echo "$d"; return 0 ;; esac
+    done
+    return 1
+}
+
+wait_state() {   # wait_state <dir> <state>: poll once per second until the state matches or the timeout ends
+    n=$TIMEOUT
+    while :; do
+        [ "$(cat "$1/state")" = "$2" ] && return 0
+        [ "$n" -gt 0 ] || return 1
+        sleep 1; n=$((n - 1))
+    done
+}
+
+core=$(find_core) || { echo "handbook-rpu: no remoteproc core matches '$MATCH'" >&2; exit 2; }
+state=$(cat "$core/state")
+
+case "$1" in
+status)
+    echo "$state"
+    [ "$state" = running ] ;;
+start)
+    [ "$state" = running ] && exit 0
+    [ -r "$FW_DIR/$FW" ] || { echo "handbook-rpu: $FW_DIR/$FW is missing" >&2; exit 3; }
+    # A crashed core must be stopped before it can be started again.
+    if [ "$state" = crashed ]; then
+        echo stop > "$core/state"; wait_state "$core" offline || { echo "handbook-rpu: core did not stop" >&2; exit 4; }
+    fi
+    echo "$FW" > "$core/firmware"
+    echo start > "$core/state"
+    wait_state "$core" running && exit 0
+    echo "handbook-rpu: core is '$(cat "$core/state")' after ${TIMEOUT} s" >&2
+    exit 5 ;;
+stop)
+    [ "$state" = offline ] && exit 0
+    echo stop > "$core/state"
+    wait_state "$core" offline || { echo "handbook-rpu: core is '$(cat "$core/state")' after ${TIMEOUT} s" >&2; exit 4; } ;;
+*)
+    echo "usage: handbook-rpu start|stop|status" >&2; exit 64 ;;
+esac

@@ -1,0 +1,26 @@
+# A. Bundle signed on 2026-10-31, signer certificate valid until 2027-10-30
+$ faketime '2020-01-01 00:00:00' rauc --conf sys-custom.conf info update.raucb
+signature verification failed: Verify error: certificate is not yet valid
+
+$ faketime '2020-01-01 00:00:00' rauc --conf sys-signtime.conf info update.raucb
+Compatible: 	'handbook-vpk120'
+
+$ faketime '2028-01-01 00:00:00' rauc --conf sys-custom.conf info update.raucb
+signature verification failed: Verify error: certificate has expired
+
+$ faketime '2028-01-01 00:00:00' rauc --conf sys-signtime.conf info update.raucb
+Compatible: 	'handbook-vpk120'
+
+# B. Bundle built on 2028-01-01, after the signer certificate expired
+Creating 'plain' format bundle
+$ faketime '2028-01-02 00:00:00' rauc --conf sys-signtime.conf info late.raucb
+signature verification failed: Verify error: certificate has expired
+
+# C. Same expired key, bundle built with the build host clock set back to 2027-06-01
+Creating 'plain' format bundle
+$ faketime '2028-01-02 00:00:00' rauc --conf sys-custom.conf info backdated.raucb
+signature verification failed: Verify error: certificate has expired
+
+$ faketime '2028-01-02 00:00:00' rauc --conf sys-signtime.conf info backdated.raucb
+Compatible: 	'handbook-vpk120'
+

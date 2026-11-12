@@ -1,0 +1,23 @@
+# 1. Key names against the systemd-networkd binary
+keys checked in 3 files, unknown keys: 0
+
+# 2. Syntax of the ruleset
+$ nft -c -f handbook-firewall.nft
+exit status 0
+$ nft -c -f broken.nft   # one letter missing in "accept"
+broken.nft:19:51-51: Error: syntax error, unexpected newline
+		iifname { "eth0", "vlan20" } tcp dport 443 acept
+exit status 1
+
+# 3. Packets against the loaded ruleset (two peers, veth pairs, network namespaces)
+PASS  pdata  -> 192.0.2.10     port 22   expect dropped  got dropped
+PASS  pdata  -> 192.0.2.10     port 443  expect open     got open
+PASS  pdata  -> 192.0.2.10     port 502  expect open     got open
+PASS  pdata  -> 192.0.2.10     port 8080 expect dropped  got dropped
+PASS  pmgmt  -> 198.51.100.10  port 22   expect open     got open
+PASS  pmgmt  -> 198.51.100.10  port 443  expect open     got open
+PASS  pmgmt  -> 198.51.100.10  port 502  expect dropped  got dropped
+PASS  pmgmt  -> 198.51.100.10  port 8080 expect dropped  got dropped
+PASS  pdata  -> 198.51.100.10  port 22   expect dropped  got dropped
+failures: 0
+PASS  10 new SSH connections from the management peer in a row: 4 accepted, 6 dropped (burst 5, refill 1 every 10 s)

@@ -1,0 +1,13 @@
+[Unit]
+Description=Start the real time core firmware through remoteproc
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/handbook-rpu start
+ExecStop=/usr/bin/handbook-rpu stop
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target

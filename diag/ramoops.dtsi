@@ -1,0 +1,13 @@
+/* A pstore region in DDR. The kernel writes the last panic log, console and user space messages here,
+   and reads them after a reset if the DDR contents survived. The address is a placeholder. */
+&{/reserved-memory} {
+	ramoops@7f000000 {
+		compatible = "ramoops";
+		reg = <0x0 0x7f000000 0x0 0x100000>;
+		record-size = <0x20000>;
+		console-size = <0x20000>;
+		pmsg-size = <0x10000>;
+		ecc-size = <16>;
+		no-map;
+	};
+};

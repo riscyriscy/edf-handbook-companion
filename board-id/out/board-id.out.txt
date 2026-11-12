@@ -1,0 +1,99 @@
+# 1. Build an image for a new unit, then check it and show its layout
+$ fruimg.py build -o som.bin --serial SN0000001 --mac 02:00:00:00:00:01
+wrote som.bin: 256 bytes, serial SN0000001, mac 02:00:00:00:00:01
+exit status 0
+
+$ fruimg.py show som.bin
+manufacturer   EXAMPLE CO
+product        SOM-X1
+serial         SN0000001
+part           PN-100-A
+rev            A1
+uuid           00000000-0000-4000-8000-000000000001
+mac            02:00:00:00:00:01
+areas
+  0x00 to 0x07    8 bytes  common header
+  0x08 to 0x67   96 bytes  board info area
+  0x68 to 0x79   18 bytes  DC load record
+  0x7A to 0x88   15 bytes  MAC record
+  0x89 to 0xE4   92 bytes  memory record
+  0xE5 to 0xFF   27 bytes  unused
+exit status 0
+
+$ fruimg.py check som.bin
+som.bin: valid, serial SN0000001, mac 02:00:00:00:00:01
+exit status 0
+
+# 2. The same bytes through an independent decoder (freeipmi, the library that xmutil uses)
+$ ipmi-fru --fru-file=som.bin | grep -E 'Manufacturer|Product|Serial|Part|Custom Info: A1|OEM Manufacturer ID'
+  FRU Board Manufacturer: EXAMPLE CO
+  FRU Board Product Name: SOM-X1
+  FRU Board Serial Number: SN0000001
+  FRU Board Part Number: PN-100-A
+  FRU Board Custom Info: A1
+  FRU OEM Manufacturer ID: Xilinx, Inc. (10DAh)
+  FRU OEM Manufacturer ID: Xilinx, Inc. (10DAh)
+
+# 3. What U-Boot puts in its environment from this image
+$ fruimg.py uboot som.bin
+board_manufacturer=EXAMPLE CO
+board_name=SOM-X1
+board_rev=A1
+board_serial=SN0000001
+board_uuid=00000000-0000-4000-8000-000000000001
+ethaddr=02:00:00:00:00:01
+exit status 0
+
+# 4. Change the serial number and the MAC address, and see which bytes moved
+$ fruimg.py set som.bin -o som2.bin --serial SN0000002 --mac 02:00:00:00:00:02
+wrote som2.bin: serial SN0000002, mac 02:00:00:00:00:02, rev A1
+exit status 0
+
+$ fruimg.py diff som.bin som2.bin
+0x29  31 -> 32  board info area
+0x67  CE -> CD  board info area
+0x7D  E2 -> E1  MAC record
+0x7E  40 -> 41  MAC record
+0x88  01 -> 02  MAC record
+5 bytes differ
+exit status 0
+
+$ fruimg.py check som2.bin
+som2.bin: valid, serial SN0000002, mac 02:00:00:00:00:02
+exit status 0
+
+# 5. Write the image to the EEPROM and read it back. A file of 8192 bytes stands for the M24C64.
+$ head -c 8192 /dev/zero | tr '\0' '\377' > eeprom.img   (an erased EEPROM reads 0xFF)
+$ dd if=som.bin of=eeprom.img bs=32 conv=notrunc
+8+0 records in
+8+0 records out
+256 bytes copied
+$ dd if=eeprom.img of=readback.bin bs=256 count=1 && cmp som.bin readback.bin
+readback equals the image
+$ dd if=som2.bin of=eeprom.img bs=32 conv=notrunc; read back and compare with som2.bin
+readback equals the image
+$ fruimg.py check readback.bin
+readback.bin: valid, serial SN0000002, mac 02:00:00:00:00:02
+exit status 0
+
+# 6. Faults that the check finds
+## one byte of the serial number changed without a new checksum
+$ fruimg.py check bad1.bin
+bad1.bin: INVALID: board info area: checksum is wrong
+exit status 1
+
+## the last byte of the MAC address changed without a new checksum
+$ fruimg.py check bad2.bin
+bad2.bin: INVALID: record at 0x7A (type 0xD2): record checksum is wrong
+exit status 1
+
+## an image cut off after the board info area
+$ fruimg.py check bad3.bin
+bad3.bin: INVALID: image is 104 bytes, shorter than the 229 bytes of the layout
+exit status 1
+
+## an erased EEPROM (all bytes 0xFF)
+$ fruimg.py check bad4.bin
+bad4.bin: INVALID: common header: format version is 255, not 1
+exit status 1
+

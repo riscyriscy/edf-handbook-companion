@@ -1,0 +1,40 @@
+$ check-cyclictest.py fixtures/pass.txt --max-us 150 --min-samples 3600000
+PASS thread 0 priority 80 max 74 us (budget 150 us), average 11 us
+PASS thread 1 priority 80 max 88 us (budget 150 us), average 10 us
+PASS samples per thread 3600000 (minimum 3600000)
+exit status 0
+
+$ check-cyclictest.py fixtures/over-budget.txt --max-us 150 --min-samples 3600000
+PASS thread 0 priority 80 max 74 us (budget 150 us), average 11 us
+FAIL thread 1 priority 80 max 412 us (budget 150 us), average 10 us
+PASS samples per thread 3600000 (minimum 3600000)
+exit status 1
+
+$ check-cyclictest.py fixtures/short.txt --max-us 150 --min-samples 3600000
+PASS thread 0 priority 80 max 74 us (budget 150 us), average 11 us
+PASS thread 1 priority 80 max 88 us (budget 150 us), average 10 us
+FAIL samples per thread 2000 (minimum 3600000)
+exit status 1
+
+$ check-rt-config.sh files/rt.cfg
+PASS CONFIG_PREEMPT_RT=y
+PASS CONFIG_HIGH_RES_TIMERS=y
+PASS tickless idle or full
+PASS CONFIG_PROVE_LOCKING is off
+PASS CONFIG_LOCKDEP is off
+PASS CONFIG_DEBUG_PREEMPT is off
+PASS CONFIG_KASAN is off
+PASS CONFIG_DEBUG_ATOMIC_SLEEP is off
+exit status 0
+
+$ check-rt-config.sh fixtures/lockdep.config
+FAIL CONFIG_PREEMPT_RT is not set to y
+PASS CONFIG_HIGH_RES_TIMERS=y
+PASS tickless idle or full
+FAIL CONFIG_PROVE_LOCKING=y adds latency or overhead on the real time path
+FAIL CONFIG_LOCKDEP=y adds latency or overhead on the real time path
+PASS CONFIG_DEBUG_PREEMPT is off
+PASS CONFIG_KASAN is off
+PASS CONFIG_DEBUG_ATOMIC_SLEEP is off
+exit status 3
+

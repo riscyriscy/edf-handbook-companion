@@ -1,0 +1,10 @@
+$ faketime '2020-01-01 00:00:00' rauc --conf sys-custom.conf info update.raucb
+signature verification failed: Verify error: certificate is not yet valid
+
+$ faketime '2026-10-31 00:00:00' rauc --conf sys-custom.conf info update.raucb
+Compatible: 	'handbook-vpk120'
+Version:    	'2026.1-r2'
+
+$ faketime '2028-01-01 00:00:00' rauc --conf sys-custom.conf info update.raucb
+signature verification failed: Verify error: certificate has expired
+

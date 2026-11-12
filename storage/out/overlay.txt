@@ -1,0 +1,18 @@
+$ echo "x" > lower/etc/new     # write to the squashfs layer directly
+lower/etc/new: Read-only file system
+$ echo "hostname=unit42" > merged/etc/device.conf; rm merged/etc/other.conf; echo n > merged/etc/new
+$ cat lower/etc/device.conf    # lower layer unchanged
+hostname=factory
+$ ls upperfs/upper/etc
+-rw-r--r-- 16 device.conf
+-rw-r--r-- 2 new
+c--------- 0, other.conf
+$ cat merged/etc/device.conf; ls merged/etc
+hostname=unit42
+device.conf
+new
+$ rm -rf upperfs/upper/etc/*    # factory reset: empty the upper layer, then mount the overlay again
+$ cat merged/etc/device.conf; ls merged/etc
+hostname=factory
+device.conf
+other.conf

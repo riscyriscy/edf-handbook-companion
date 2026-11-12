@@ -1,0 +1,10 @@
+$ rauc --conf sys-custom.conf info tamper-sig.raucb
+Invalid bundle format: Signature data is no valid CMS
+
+$ rauc --conf sys-custom.conf info tamper-payload.raucb
+Compatible: 	'handbook-vpk120'
+Version:    	'2026.1-r2'
+Description:	'Handbook example update'
+
+$ rauc --conf sys-custom.conf extract tamper-payload.raucb out-dir
+Failed to extract bundle: bundle payload is corrupted

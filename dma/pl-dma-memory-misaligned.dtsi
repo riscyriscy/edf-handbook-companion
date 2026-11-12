@@ -1,0 +1,20 @@
+/* A CMA pool for the buffers of a PL DMA block, and a u-dma-buf node that takes one buffer from it.
+   The addresses are placeholders. Replace them with the product's memory map. */
+&{/} {
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		pl_dma_pool: pl-dma-pool@70100000 {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x0 0x70100000 0x0 0x1400000>;
+		};
+	};
+	udmabuf0 {
+		compatible = "ikwzm,u-dma-buf";
+		device-name = "udmabuf0";
+		size = <0x01000000>;
+		memory-region = <&pl_dma_pool>;
+	};
+};
