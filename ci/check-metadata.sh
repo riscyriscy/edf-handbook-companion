@@ -13,7 +13,7 @@ check "image recipe resolves"                  bitbake -g "$image"
 for pkg in "$@"; do
     check "IMAGE_INSTALL names $pkg"           bash -c "bitbake-getvar -r $image --value IMAGE_INSTALL | grep -qw $pkg"
 done
-check "no debug-tweaks in image features"      bash -c "! bitbake-getvar -r $image --value IMAGE_FEATURES | grep -qw debug-tweaks"
+check "no debug image features"                bash -c "! bitbake-getvar -r $image --value IMAGE_FEATURES | grep -qwE 'allow-empty-password|allow-root-login|empty-root-password|post-install-logging'"
 check "image has a wic output"                 bash -c "bitbake-getvar -r $image --value IMAGE_FSTYPES | grep -qw wic"
 check "layer series match"                     bash -c "! bitbake -p 2>&1 | grep -q 'not compatible with the core layer'"
 echo "failures: $fail"

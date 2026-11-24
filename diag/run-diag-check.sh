@@ -10,7 +10,7 @@ install -m 0644 $F/10-handbook-pstore.conf $R/etc/systemd/pstore.conf.d/
 {
   echo '$ check-diag-policy.sh rootfs   # /var/log is a directory'; mkdir -p $R/var/log
   ../ci/check-diag-policy.sh $R; echo "exit status $?"; echo
-  echo '$ check-diag-policy.sh rootfs   # /var/log links to /var/volatile/log (the Poky default)'
+  echo '$ check-diag-policy.sh rootfs   # /var/log links to /var/volatile/log (the OpenEmbedded-Core default)'
   rmdir $R/var/log; ln -s volatile/log $R/var/log
   ../ci/check-diag-policy.sh $R; echo "exit status $?"; echo
   dtc -q -I dts -O dtb -o /tmp/diag-top.dtb stub-top.dts

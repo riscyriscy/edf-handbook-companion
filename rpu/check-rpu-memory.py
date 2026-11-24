@@ -2,7 +2,9 @@
 """Check the reserved-memory nodes of a compiled device tree: size, alignment, overlap and fit in DDR.
 
 Usage: check-rpu-memory.py <file.dtb> [--align 0x1000] [--cma-align 0x400000]
-A region with the 'reusable' property is a CMA pool and must also meet --cma-align.
+The base of every region must be aligned to --align. A size below or between multiples of --align is accepted and
+reported, because AMD's own resource table region is 0x100 bytes; the overlap test uses the end rounded up to --align.
+A region with the 'reusable' property is a CMA pool and must also meet --cma-align for base and size.
 Needs dtc on the PATH. It reads the DTB through 'dtc -I dtb -O dts', so it works on any host.
 Exit status: number of failed checks.
 """
@@ -31,18 +33,22 @@ def main():
     fail = 0
     for name, base, size, reusable in regions:
         probs = []
-        if base % align or size % align:
+        note = ""
+        if base % align or (reusable and size % align):
             probs.append("not aligned to 0x%x" % align)
+        elif size % align:
+            note = "size rounds up to 0x%x" % (-(-size // align) * align)
         if reusable and (base % cma_align or size % cma_align):
             probs.append("CMA pool not aligned to 0x%x" % cma_align)
         if base < ddr[0] or base + size > ddr[1]:
             probs.append("outside DDR 0x%x-0x%x" % ddr)
-        print("%-4s %-22s 0x%08x 0x%07x %s" % ("FAIL" if probs else "PASS", name, base, size, "; ".join(probs)))
+        print("%-4s %-22s 0x%08x 0x%07x %s" % ("FAIL" if probs else "PASS", name, base, size, "; ".join(probs) or note))
         fail += bool(probs)
     s = sorted(regions, key=lambda r: r[1])
     for a, b in zip(s, s[1:]):
-        if a[1] + a[2] > b[1]:
-            print("FAIL %s overlaps %s by 0x%x" % (a[0], b[0], a[1] + a[2] - b[1]))
+        end = -(-(a[1] + a[2]) // align) * align
+        if end > b[1]:
+            print("FAIL %s overlaps %s by 0x%x" % (a[0], b[0], end - b[1]))
             fail += 1
     print("regions: %d, failures: %d" % (len(regions), fail))
     return fail

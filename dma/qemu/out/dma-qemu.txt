@@ -1,0 +1,14 @@
+Kernel command line: console=ttyPS0,115200 earlycon dmatest.iterations=5 dmatest.test_buf_size=16384 dmatest.run=1
+dmatest: No channels configured, continue with any
+handbook-dmacopy dma-copy-good: channel dma0chan0 of fd500000.dma-controller, memcpy yes
+handbook-dmacopy dma-copy-good: copied 65536 bytes: status complete, data matches
+handbook-dmacopy dma-copy-misnamed: error -19: no channel named copy
+dmatest: Added 1 threads using dma0chan0
+dmatest: Added 1 threads using dma1chan0
+dmatest: Started 1 threads using dma0chan0
+dmatest: Started 1 threads using dma1chan0
+dmatest: dma1chan0-copy0: summary 5 tests, 0 failures 2382.08 iops 10481 KB/s (0)
+dmatest: dma0chan0-copy0: summary 5 tests, 0 failures 11363.63 iops 109090 KB/s (0)
+init: channels in /sys/class/dma
+  dma1chan0 in_use=1
+  dma0chan0 in_use=1

@@ -4,8 +4,9 @@ Test layer for "The Embedded AMD EDF Handbook". It targets the Poky reference ma
 
 ## Dependencies
 
-- `poky` (meta), branch scarthgap, tag yocto-5.0.15
-- `meta-rauc`, branch scarthgap (only the bundle recipe needs it)
+- `openembedded-core` (meta), `bitbake` and `meta-yocto` (meta-poky), at the EDF 26.11 pins (manifest `amd-edf-rel-v26.11`)
+- `meta-openembedded` (meta-oe and meta-networking, which supplies nftables for handbook-net), at the EDF 26.11 pin
+- `meta-rauc`, branch wrynose (only the bundle recipe needs it)
 
 ## Contents
 
@@ -29,8 +30,9 @@ Test layer for "The Embedded AMD EDF Handbook". It targets the Poky reference ma
 | `recipes-update/handbook-health` | health check script and unit |
 | `recipes-update/handbook-migrate` | data migration script and unit |
 | `recipes-update/rauc` | RAUC `system.conf` and the test certificate |
-| `wic/handbook-ab.wks` | A/B partition table |
+| `files/wic/handbook-ab.wks` | A/B partition table |
+| `SECURITY.md` | where to report a fault |
 
-## Patches and contact
+## Maintainers and patches
 
-This layer carries no patches. Send comments to the book's author.
+Maintainer: the author of the book, at handbook-maintainers@example.com. The address is a placeholder from the reserved example.com domain, so replace it with the address of your own team. This layer carries no patches. Send a patch to the maintainer as an email or a pull request.

@@ -7,7 +7,7 @@ LOG = [
     (0.2, "NOTICE:  BL31: v2.14 running at EL3"),
     (0.3, "U-Boot 2026.01 (Jan 05 2026)"),
     (0.2, "Hit any key to stop autoboot:  0"),
-    (0.5, "[    0.000000] Linux version 6.18.10-xilinx"),
+    (0.5, "[    0.000000] Linux version 6.18.40-xilinx"),
     (0.4, "[    3.912004] systemd[1]: Reached target Multi-User System."),
     (0.1, "amd-edf login: "),
 ]

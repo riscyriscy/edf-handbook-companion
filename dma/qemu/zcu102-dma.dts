@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * The smallest device tree for the QEMU machine xlnx-zcu102 that brings up
+ * two channels of the ZynqMP GDMA and two dmaengine clients. Fixed clocks
+ * stand in for the clock driver, which needs the PMU firmware, and the power
+ * domains of zynqmp.dtsi are left out for the same reason.
+ */
+/dts-v1/;
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	compatible = "xlnx,zynqmp";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&gic>;
+
+	chosen {
+		bootargs = "console=ttyPS0,115200 earlycon dmatest.iterations=5 dmatest.test_buf_size=16384 dmatest.run=1";
+		stdout-path = "serial0:115200n8";
+	};
+	aliases { serial0 = &uart0; };
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu@0 { compatible = "arm,cortex-a53"; device_type = "cpu"; reg = <0>; };
+	};
+	memory@0 { device_type = "memory"; reg = <0x0 0x0 0x0 0x40000000>; };
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	clk100: clock-100m { compatible = "fixed-clock"; #clock-cells = <0>; clock-frequency = <100000000>; };
+	clk533: clock-533m { compatible = "fixed-clock"; #clock-cells = <0>; clock-frequency = <533000000>; };
+
+	axi {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		gic: interrupt-controller@f9010000 {
+			compatible = "arm,gic-400";
+			#interrupt-cells = <3>;
+			reg = <0x0 0xf9010000 0x0 0x10000>, <0x0 0xf9020000 0x0 0x20000>;
+			interrupt-controller;
+		};
+
+		uart0: serial@ff000000 {
+			compatible = "xlnx,zynqmp-uart", "cdns,uart-r1p12";
+			reg = <0x0 0xff000000 0x0 0x1000>;
+			interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk100>, <&clk100>;
+			clock-names = "uart_clk", "pclk";
+		};
+
+		/* Channels 1 and 2 of the GDMA, as in zynqmp.dtsi */
+		fpd_dma_chan1: dma-controller@fd500000 {
+			compatible = "xlnx,zynqmp-dma-1.0";
+			reg = <0x0 0xfd500000 0x0 0x1000>;
+			interrupts = <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk533>, <&clk100>;
+			clock-names = "clk_main", "clk_apb";
+			#dma-cells = <1>;
+			xlnx,bus-width = <128>;
+		};
+		fpd_dma_chan2: dma-controller@fd510000 {
+			compatible = "xlnx,zynqmp-dma-1.0";
+			reg = <0x0 0xfd510000 0x0 0x1000>;
+			interrupts = <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk533>, <&clk100>;
+			clock-names = "clk_main", "clk_apb";
+			#dma-cells = <1>;
+			xlnx,bus-width = <128>;
+		};
+	};
+
+	/* A client that names its channel "copy" */
+	dma-copy-good {
+		compatible = "handbook,dma-copy";
+		dmas = <&fpd_dma_chan1 0>;
+		dma-names = "copy";
+	};
+	/* The same client with the name that a reader copied from another driver */
+	dma-copy-misnamed {
+		compatible = "handbook,dma-copy";
+		dmas = <&fpd_dma_chan1 0>;
+		dma-names = "tx";
+	};
+};

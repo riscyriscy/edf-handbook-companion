@@ -18,7 +18,7 @@ check "journald Storage=persistent" test "$js" = persistent
 check "journald SystemMaxUse is set" test -n "$(val systemd/journald.conf SystemMaxUse)"
 # A persistent journal needs /var/log on persistent storage. A link into /var/volatile means it does not survive a reboot.
 if [ -L "$root/var/log" ]; then
-    echo "FAIL /var/log is a link to $(readlink "$root/var/log"); set VOLATILE_LOG_DIR = \"no\""; fail=$((fail + 1))
+    echo "FAIL /var/log is a link to $(readlink "$root/var/log"); remove files/fs-perms-volatile-log.txt from FILESYSTEM_PERMS_TABLES"; fail=$((fail + 1))
 else echo "PASS /var/log is a directory"; fi
 for k in ProcessSizeMax ExternalSizeMax MaxUse KeepFree; do
     check "coredump $k is set" test -n "$(val systemd/coredump.conf $k)"

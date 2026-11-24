@@ -1,25 +1,34 @@
-/* Reserved memory for the shared memory of one R5F core. The addresses follow the pattern of
-   versal-openamp.dtsi in meta-xilinx (core 0). Replace them with the product's memory map. */
+/* Fault: the second ring starts 0x1000 before the end of the first. The regions and addresses are those of core 0 in the
+   pre-generated Linux device tree of the versal-vek280-multidomain machine of EDF 26.11 (meta-amd-adaptive-socs).
+   Replace them with the product's memory map. */
 &{/} {
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
-		rproc_0_reserved: rproc@3ed00000 {
+		rproc0: rproc0@9800000 {
 			no-map;
-			reg = <0x0 0x3ed00000 0x0 0x40000>;
+			reg = <0x0 0x9800000 0x0 0x20000>;
 		};
-		rpu0vdev0vring0: rpu0vdev0vring0@3ed40000 {
+		rsctbl: rsctbl@9820000 {
 			no-map;
-			reg = <0x0 0x3ed40000 0x0 0x4000>;
+			reg = <0x0 0x9820000 0x0 0x100>;
 		};
-		rpu0vdev0vring1: rpu0vdev0vring1@3ed43000 {
+		trace_buffer: trace@985f000 {
 			no-map;
-			reg = <0x0 0x3ed43000 0x0 0x4000>;
+			reg = <0x0 0x985f000 0x0 0x1000>;
 		};
-		rpu0vdev0buffer: rpu0vdev0buffer@3ed48000 {
+		vdev0vring0: vdev0vring0@9880000 {
 			no-map;
-			reg = <0x0 0x3ed48000 0x0 0x100000>;
+			reg = <0x0 0x9880000 0x0 0x4000>;
+		};
+		vdev0vring1: vdev0vring1@9883000 {
+			no-map;
+			reg = <0x0 0x9883000 0x0 0x4000>;
+		};
+		vdev0buffer: vdev0buffer@9888000 {
+			no-map;
+			reg = <0x0 0x9888000 0x0 0x78000>;
 		};
 	};
 };

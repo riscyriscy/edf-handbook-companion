@@ -5,10 +5,10 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
-		pl_dma_pool: pl-dma-pool@3ec00000 {
+		pl_dma_pool: pl-dma-pool@9400000 {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x0 0x3ec00000 0x0 0x1400000>;
+			reg = <0x0 0x9400000 0x0 0x1400000>;
 		};
 	};
 	udmabuf0 {

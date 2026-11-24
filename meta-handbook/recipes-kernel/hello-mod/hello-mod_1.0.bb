@@ -6,6 +6,6 @@ inherit module
 
 SRC_URI = "file://Makefile \
            file://hello_mod.c"
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 RPROVIDES:${PN} += "kernel-module-hello-mod"

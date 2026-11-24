@@ -1,0 +1,26 @@
+$ cryptsetup --version
+cryptsetup 2.7.0 flags: UDEV BLKID KEYRING FIPS KERNEL_CAPI HW_OPAL 
+$ cryptsetup luksFormat --batch-mode --type luks2 --key-file key.bin default.img
+exit status 0
+$ cryptsetup luksDump default.img   (selected lines)
+ data offset: 16777216 [bytes]
+ data cipher: aes-xts-plain64
+ data sector: 4096 [bytes]
+ key slot PBKDF: argon2id
+ key slot Time cost: 4
+ key slot Memory: 742028
+$ cryptsetup open --test-passphrase --key-file key.bin default.img
+exit status 0, 2214 ms
+$ cryptsetup luksFormat --batch-mode --type luks2 --key-file key.bin --pbkdf pbkdf2 --pbkdf-force-iterations 1000 pbkdf2.img
+exit status 0
+$ cryptsetup luksDump pbkdf2.img   (selected lines)
+ data offset: 16777216 [bytes]
+ data cipher: aes-xts-plain64
+ data sector: 4096 [bytes]
+ key slot PBKDF: pbkdf2
+ key slot Iterations: 1000
+$ cryptsetup open --test-passphrase --key-file key.bin pbkdf2.img
+exit status 0, 21 ms
+$ cryptsetup open --test-passphrase --key-file wrong.bin pbkdf2.img
+No key available with this passphrase.
+exit status 2

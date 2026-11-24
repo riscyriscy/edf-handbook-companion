@@ -10,11 +10,11 @@ PASS coredump KeepFree is set
 PASS pstore archive removes files after copy (Unlink=yes)
 exit status 0
 
-$ check-diag-policy.sh rootfs   # /var/log links to /var/volatile/log (the Poky default)
+$ check-diag-policy.sh rootfs   # /var/log links to /var/volatile/log (the OpenEmbedded-Core default)
 effective journald Storage=persistent
 PASS journald Storage=persistent
 PASS journald SystemMaxUse is set
-FAIL /var/log is a link to volatile/log; set VOLATILE_LOG_DIR = "no"
+FAIL /var/log is a link to volatile/log; remove files/fs-perms-volatile-log.txt from FILESYSTEM_PERMS_TABLES
 PASS coredump ProcessSizeMax is set
 PASS coredump ExternalSizeMax is set
 PASS coredump MaxUse is set
@@ -23,11 +23,13 @@ PASS pstore archive removes files after copy (Unlink=yes)
 exit status 1
 
 $ dtc -I dts -O dtb -o top.dtb stub-top.dts && check-rpu-memory.py top.dtb
-PASS rproc@3ed00000         0x3ed00000 0x0040000 
-PASS rpu0vdev0vring0@3ed40000 0x3ed40000 0x0004000 
-PASS rpu0vdev0vring1@3ed44000 0x3ed44000 0x0004000 
-PASS rpu0vdev0buffer@3ed48000 0x3ed48000 0x0100000 
+PASS rproc0@9800000         0x09800000 0x0020000 
+PASS rsctbl@9820000         0x09820000 0x0000100 size rounds up to 0x1000
+PASS trace@985f000          0x0985f000 0x0001000 
+PASS vdev0vring0@9880000    0x09880000 0x0004000 
+PASS vdev0vring1@9884000    0x09884000 0x0004000 
+PASS vdev0buffer@9888000    0x09888000 0x0078000 
 PASS pl-dma-pool@70000000   0x70000000 0x1400000 
 PASS ramoops@7f000000       0x7f000000 0x0100000 
-regions: 6, failures: 0
+regions: 8, failures: 0
 exit status 0
