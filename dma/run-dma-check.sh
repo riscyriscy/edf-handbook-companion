@@ -1,5 +1,5 @@
 #!/bin/bash
-# Compile the DMA pool fragments with dtc and run the memory checker of Chapter 19 on each. Output goes to out/.
+# Compile the DMA pool fragments with dtc and run the memory checker of Chapter 18 on each. Output goes to out/.
 cd "$(dirname "$0")"; mkdir -p out
 {
   for v in "" -misaligned -overlap; do

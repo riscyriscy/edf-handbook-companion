@@ -1,0 +1,60 @@
+$ bootgen -arch versal -image keys-versal.bif -generate_keys pem
+[INFO]   : Bootimage generated successfully
+primary0.pem
+secondary0.pem
+
+$ bootgen -arch versal -image auth-versal.bif -w -o boot.pdi -efuseppkbits efuseppksha.txt
+[INFO]   : Bootimage generated successfully
+boot.pdi: 20512 bytes. PPK hash file: 64 hex digits
+
+$ bootgen -arch versal -image auth-versal.bif -verify boot.pdi
+Verifying Header Authentication Certificate
+    SPK Signature Verified
+    Image Header Table Signature Verified
+    Header Signature Verified
+Verifying Partition pmc_subsys.0
+    BootHeader Signature Verified
+    SPK Signature Verified
+    Partition Signature Verified
+Verifying Partition fpd.0
+    SPK Signature Verified
+    Partition Signature Verified
+Verifying Partition apu_subsys.0
+    SPK Signature Verified
+    Partition Signature Verified
+Authentication is verified on bootimage boot.pdi
+10 signature checks passed
+
+# The same BIF without the metaheader line: the header is not signed
+$ bootgen -arch versal -image auth-nohdr.bif -verify boot-nohdr.pdi
+[WARNING]: Bootimage boot-nohdr.pdi header is not authenticated. Skipping header verification, proceeding with partition verification.
+Authentication is verified on bootimage boot-nohdr.pdi
+7 signature checks passed
+
+# Flip one byte inside the u-boot partition, then verify again
+$ bootgen -arch versal -image auth-versal.bif -verify boot-tampered.pdi
+Verifying Partition apu_subsys.0
+    SPK Signature Verified
+    Partition Signature Verification Failed
+[ERROR]  : Authentication verification failed on bootimage boot-tampered.pdi
+
+# Flip one byte inside the PLM partition, then verify again
+$ bootgen -arch versal -image auth-versal.bif -verify boot-tampered-plm.pdi
+Verifying Partition pmc_subsys.0
+    BootHeader Signature Verified
+    SPK Signature Verified
+    Partition Signature Verification Failed
+[ERROR]  : Authentication verification failed on bootimage boot-tampered-plm.pdi
+
+# A new secondary key under the same primary key: the PPK hash does not change
+$ bootgen -arch versal -image auth-versal.bif -verify boot.pdi    (new secondary key)
+Authentication is verified on bootimage boot.pdi
+hash, key set 1             : F79B51E22D15C2721CCCCCEEBF8F9A2F39327F0734C802C30D86961178735344
+hash, same primary, new SSK : F79B51E22D15C2721CCCCCEEBF8F9A2F39327F0734C802C30D86961178735344
+
+# A new primary key: the PPK hash changes
+hash, key set 2             : 10ED79A90E7FF75833A8F44E60FF256251B4489C6D0BF1255E137600602A0058
+
+# Verify the key set 1 image with key set 2 files
+$ bootgen -arch versal -image auth-versal.bif -verify ../boot.pdi    (key set 2 directory)
+Authentication is verified on bootimage ../boot.pdi

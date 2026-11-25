@@ -1,0 +1,30 @@
+$ rauc --conf sys-custom.conf info plain.raucb    (certificate chain in the signature)
+ 0 Subject: O = Handbook Test, CN = Handbook Test Signer
+   Issuer: O = Handbook Test, CN = Handbook Test CA
+ 1 Subject: O = Handbook Test, CN = Handbook Test CA
+   Issuer: O = Handbook Test, CN = Handbook Test CA
+
+$ rauc --conf sys-custom.conf info plain-resigned.raucb    (device trusts the old CA only)
+signature verification failed: Verify error: unable to get local issuer certificate
+
+$ rauc --conf sys-ca2only.conf info plain.raucb            (device trusts the new CA only)
+signature verification failed: Verify error: unable to get local issuer certificate
+
+$ rauc --conf sys-both.conf info plain.raucb               (keyring holds both CAs)
+Compatible:     'handbook-vpk120'
+Version:        '2026.1-r3'
+   Issuer: O = Handbook Test, CN = Handbook Test CA
+
+$ rauc --conf sys-ca2only.conf info plain-resigned.raucb    (device trusts the new CA only)
+Compatible:     'handbook-vpk120'
+Version:        '2026.1-r3'
+   Issuer: O = Handbook Test, CN = Handbook Test CA 2027
+
+$ rauc --conf sys-both.conf info plain-resigned.raucb
+Compatible:     'handbook-vpk120'
+Version:        '2026.1-r3'
+   Issuer: O = Handbook Test, CN = Handbook Test CA 2027
+
+$ rauc --conf sys-both.conf info --output-format=json <bundle> | grep -o checksum and size
+plain.raucb          "checksum":"61e12ece25339adaf2d720d530cb858ca55176eeb3c9707b7f6800050ab5a1f7","size":602112
+plain-resigned.raucb "checksum":"61e12ece25339adaf2d720d530cb858ca55176eeb3c9707b7f6800050ab5a1f7","size":602112

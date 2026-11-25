@@ -1,0 +1,22 @@
+all:
+{
+	pskfile = primary0.pem
+	sskfile = secondary0.pem
+	metaheader { authentication=rsa }
+	image
+	{
+		name = pmc_subsys, id = 0x1c000001
+		{ type=bootloader, authentication=rsa, file=plm.elf }
+		{ type=pmcdata, load=0xf2000000, file=pmc_cdo.txt }
+	}
+	image
+	{
+		name = fpd, id = 0x4210002
+		{ type=cdo, authentication=rsa, file=fpd_cdo.txt }
+	}
+	image
+	{
+		name = apu_subsys, id = 0x1c000000
+		{ core=a72-0, authentication=rsa, file=u-boot.elf }
+	}
+}

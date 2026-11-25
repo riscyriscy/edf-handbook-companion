@@ -1,0 +1,34 @@
+$ rauc --keyring ca.cert.pem info update.raucb
+Compatible:     'handbook-vpk120'
+Version:        '2026.1-r2'
+Description:    'Handbook example update'
+Build:          '(null)'
+Hooks:          ''
+Bundle Format:  verity
+  Verity Salt:  'c626c37bb110912d227560ed74ecb71e7996087f2adc1c8f3c06c0825a698fa9'
+  Verity Hash:  'd81889b0d126c2bff9fa749953c695a65ad38ab07ab49cd4d3c1be361fce9406'
+  Verity Size:  12288
+Manifest Hash:  '5c1aef58694fe065a269ef9e2fb10ae762f8fabf2f6de076adcbb954326c602b'
+1 Image:
+  [rootfs]
+    Filename:  rootfs.img
+    Type:      raw (detected)
+    Checksum:  61e12ece25339adaf2d720d530cb858ca55176eeb3c9707b7f6800050ab5a1f7
+    Size:      602.1 kB (602112 bytes)
+    Hooks:     
+Certificate Chain:
+ 0 Subject: O = Handbook Test, CN = Handbook Test Signer
+   Issuer: O = Handbook Test, CN = Handbook Test CA
+   SPKI sha256: 9C:55:8B:27:3C:61:5B:7C:AA:D2:44:9F:BA:57:7D:BE:2D:EF:24:DB:B0:21:21:99:93:85:8B:4C:2A:63:8D:6B
+   Not Before: Nov 24 20:40:24 2026 GMT
+
+$ rauc --conf sys-custom.conf info eku.raucb
+signature verification failed: Verify error: unsuitable certificate purpose
+
+$ rauc --conf sys-codesign.conf info eku.raucb
+Compatible:     'handbook-vpk120'
+Version:        '2026.1-r2'
+Description:    'Handbook example update'
+
+$ rauc --conf sys-other.conf info update.raucb
+signature verification failed: Verify error: unable to get local issuer certificate

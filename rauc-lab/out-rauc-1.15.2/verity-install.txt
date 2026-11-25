@@ -1,0 +1,4 @@
+$ rauc --conf sys-custom.conf install update.raucb    (verity bundle)
+100% Installing failed.
+LastError: Failed mounting bundle: Failed to open /dev/mapper/control: No such file or directory
+Installing `update.raucb` failed

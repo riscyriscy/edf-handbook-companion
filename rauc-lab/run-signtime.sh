@@ -12,7 +12,7 @@ verify() { # clock config bundle
 mkdir -p b-late; cp payload/rootfs.img b-late/
 printf '[update]\ncompatible=handbook-vpk120\nversion=2027.1-r1\n\n[bundle]\nformat=plain\n\n[image.rootfs]\nfilename=rootfs.img\n' > b-late/manifest.raucm
 {
-  echo "# A. Bundle signed on 2026-10-31, signer certificate valid until 2027-10-30"
+  echo "# A. Bundle signed on $(date -u -r update.raucb +%F), signer certificate valid until $(date -u -d "$(openssl x509 -in dev.cert.pem -noout -enddate | cut -d= -f2)" +%F)"
   for d in "2020-01-01 00:00:00" "2028-01-01 00:00:00"; do
     verify "$d" sys-custom.conf update.raucb
     verify "$d" sys-signtime.conf update.raucb

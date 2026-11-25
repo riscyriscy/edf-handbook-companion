@@ -1,6 +1,6 @@
 /dts-v1/;
 /* A stand-in for the rest of the device tree, so that dtc can compile the fragments on any host.
-   The first include is the shared memory of an R5F core (Chapter 19). The second is the DMA pool. */
+   The first include is the shared memory of an R5F core (Chapter 18). The second is the DMA pool. */
 / {
 	#address-cells = <2>;
 	#size-cells = <2>;

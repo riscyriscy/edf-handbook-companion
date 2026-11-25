@@ -1,6 +1,6 @@
 #!/bin/bash
 # Offline RAUC lab used for the examples in chapter 12 of The Embedded AMD EDF Handbook.
-# Needs: root, rauc (tested with 1.11.3), openssl, squashfs-tools, dbus-daemon.
+# Needs: root, rauc (tested with 1.11.3 and 1.15.2), openssl, squashfs-tools, dbus-daemon.
 # Writes transcripts to ./out and leaves all keys and bundles in ./work (test keys only).
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd); W=$HERE/work; O=$HERE/out
@@ -74,7 +74,7 @@ cp update.raucb tamper-sig.raucb; sz=$(stat -c %s update.raucb); printf '\x55' |
 
 # 4b. Certificate validity depends on the device clock (needs faketime)
 if command -v faketime >/dev/null; then
-  { for d in "2020-01-01 00:00:00" "2026-10-31 00:00:00" "2028-01-01 00:00:00"; do
+  { for d in "2020-01-01 00:00:00" "$(date -u -d tomorrow +%F) 00:00:00" "2028-01-01 00:00:00"; do
       echo "\$ faketime '$d' rauc --conf sys-custom.conf info update.raucb"
       faketime "$d" rauc --conf sys-custom.conf info update.raucb 2>&1 | clean | grep -v 'central status\|system status\|Reading\|Verifying' | head -2; echo; done
   } > "$O/clock.txt"

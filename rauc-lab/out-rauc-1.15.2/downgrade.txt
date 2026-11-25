@@ -1,0 +1,33 @@
+$ rauc --version
+rauc v1.15.2
+
+$ grep min-bundle-version sys-min2.conf
+min-bundle-version=2026.11.2
+
+$ rauc --conf sys-min2.conf install v1.raucb
+LastError: Version mismatch: Expected at least '2026.11.2' but bundle manifest has '2026.11.1'
+idle
+Installing `v1.raucb` failed
+
+$ rauc --conf sys-min2.conf install v2.raucb
+ 99% Updating slots done.
+100% Installing done.
+Installing `v2.raucb` succeeded
+
+$ rauc --conf sys-min2.conf install v3.raucb
+ 99% Updating slots done.
+100% Installing done.
+Installing `v3.raucb` succeeded
+
+$ rauc --conf sys-min2.conf install --ignore-version-limit v1.raucb
+100% Installing done.
+idle
+Installing `v1.raucb` succeeded
+
+$ grep min-bundle-version sys-minr9.conf
+min-bundle-version=2026.1-r9
+
+$ rauc --conf sys-minr9.conf install r10.raucb
+100% Installing failed.
+LastError: Version mismatch: Expected at least '2026.1-r9' but bundle manifest has '2026.1-r10'
+Installing `r10.raucb` failed

@@ -1,0 +1,14 @@
+(simulated reboot into slot B: service started with --override-boot-slot=B)
+$ rauc status mark-good
+rauc status: marked slot(s) rootfs.1 as good
+$ cat /tmp/bl-state
+PRIMARY=B
+STATE_A=good
+STATE_B=good
+
+$ rauc status mark-bad
+rauc status: marked slot(s) rootfs.1 as bad
+$ cat /tmp/bl-state
+PRIMARY=B
+STATE_A=good
+STATE_B=bad

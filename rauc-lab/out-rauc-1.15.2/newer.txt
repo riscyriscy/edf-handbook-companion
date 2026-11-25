@@ -1,0 +1,69 @@
+$ rauc --version
+rauc v1.15.2
+
+$ grep prevent-late-fallback sys-plf.conf
+prevent-late-fallback=true
+
+# --conf sys-plain.conf: install to slot B, reboot into B, mark good
+$ rauc --conf sys-plain.conf status mark-good
+rauc status: marked slot(s) rootfs.1 as good
+$ cat /tmp/bl-state-nw
+PRIMARY=B
+STATE_A=good
+STATE_B=good
+
+# --conf sys-plf.conf: install to slot B, reboot into B, mark good
+$ rauc --conf sys-plf.conf status mark-good
+rauc status: marked slot(s) rootfs.1 as good
+$ cat /tmp/bl-state-nw
+PRIMARY=B
+STATE_A=bad
+STATE_B=good
+
+$ grep allowed-signer-cns sys-cn-bad.conf
+allowed-signer-cns=Other Name;Another Name
+
+$ rauc --conf sys-cn-bad.conf install os.raucb
+ 20% Checking bundle failed.
+100% Installing failed.
+LastError: No signature CN matching allowed-signer-cns found
+Installing `os.raucb` failed
+
+$ grep allowed-signer-cns sys-cn-ok.conf
+allowed-signer-cns=Other Name;Handbook Test Signer
+
+$ rauc --conf sys-cn-ok.conf install os.raucb
+100% Installing done.
+Installing `os.raucb` succeeded
+
+$ grep -A2 artifacts sys-art.conf
+[artifacts.add-ons]
+path=/tmp/add-ons
+type=files
+
+$ rauc bundle ... b-art art-plain.raucb    (manifest: format=plain, [image.add-ons/app-1])
+Failed to create bundle: Artifacts are not supported in plain bundles
+
+$ rauc bundle ... b-art art.raucb          (manifest: format=verity)
+Creating 'verity' format bundle
+
+$ rauc --conf sys-art.conf info art.raucb
+Compatible:     'handbook-vpk120'
+Version:        '2026.11.5'
+Description:    '(null)'
+Build:          '(null)'
+Hooks:          ''
+Bundle Format:  verity
+1 Image:
+  [add-ons]
+    Artifact:  app-1
+    Filename:  app-1.bin
+    Type:      (null)
+    Checksum:  e4eb6032d519e96574529035eabe7d641b02f1a32435b4eff3b12c11c498595f
+    Hooks:     
+Certificate Chain:
+
+$ rauc --conf sys-art.conf install art.raucb
+100% Installing failed.
+LastError: Failed mounting bundle: Failed to open /dev/mapper/control: No such file or directory
+Installing `art.raucb` failed

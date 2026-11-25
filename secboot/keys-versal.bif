@@ -1,0 +1,7 @@
+the_ROM_image:
+{
+	pskfile = primary0.pem
+	sskfile = secondary0.pem
+	image { name = pmc_subsys, id = 0x1c000001
+	  { type=bootloader, file=plm.elf } }
+}
